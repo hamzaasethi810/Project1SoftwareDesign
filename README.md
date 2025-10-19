@@ -1,2 +1,5 @@
-# Project1SoftwareDesign
-The description for the project for software development and design class CS5744
+Hamza - High Level Design
+Rami - use cases & design rationale
+Shoaib - background
+Ethan - modules
+Nart - Requirements
