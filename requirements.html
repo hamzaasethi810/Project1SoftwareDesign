@@ -158,51 +158,64 @@ NFR-304 <b>(Security)</b> – All information such as password will be tokenized
 <h3>Functional Requirements</h3>
 <h3>User Input</h3>
 <ul>
-  <li><b>FR-401:</b> Users will be able to input their class schedules...</li>
-  <li><b>FR-402:</b> The software will also be able to obtain students' assignments...</li>
-  <li><b>FR-403:</b> Users will be able to input any free time...</li>
+  <li><b>FR-401:</b> Users will be able to input their class schedules, work hours, gym times, and any other extracurricular activites. </li>
+  <li><b>FR-402:</b> The software will also be able to obtain students' assignments and due dates through Canvas, and incorporate them into the schedule making process</li>
+  <li><b>FR-403:</b> Users will be able to input any free time they would like to have along with preferred study/work hours.</li>
 </ul>
 <h3>Schedule Generation</h3>
 <ul>
-  <li><b>FR-404:</b> The system will then take all of the aforementioned information...</li>
-  <li><b>FR-405:</b> As new assignments as being added through Canvas...</li>
-  <li><b>FR-406:</b> The system will also be able to be manually changed...</li>
+  <li><b>FR-404:</b> The system will then take all of the aforementioned information and provide personalized daily and weekly schedules.</li>
+  <li><b>FR-405:</b> As new assignments as being added through Canvas, the system will adjust automatically and notify users of any schedule changes beforehand.</li>
+  <li><b>FR-406:</b> The system will also be able to be manually changed if the user wants to make specific changes of their schedule, and the system will adapt as needed.</li>
   <li><b>FR-407:</b> Real-time updates will be given to users.</li>
 </ul>
 <h3>Interaction with AI Companion</h3>
 <ul>
-  <li><b>FR-408:</b> The user will able to communicate with the AI companion...</li>
-  <li><b>FR-409:</b> The AI companion will provide suggestions...</li>
+  <li><b>FR-408:</b> The user will able to communicate with the AI companion and query it on why certain schedule decisions were made.</li>
+  <li><b>FR-409:</b> The AI companion will provide suggestions on how to balance sleep schedules with the users' working schedules.
+</li>
 </ul>
 <h3>User Feedback</h3>
 <ul>
-  <li><b>FR-410:</b> The system will prompt users with feedback opportunities...</li>
-  <li><b>FR-411:</b> The system will provide a highly usable interface...</li>
-  <li><b>FR-412:</b> The system's visualization will be able to be changed dynamically...</li>
+  <li><b>FR-410:</b> The system will prompt users with feedback opportunities to improve on future tailored schedules.
+</li>
+  <li><b>FR-411:</b> The system will provide a highly usable interface that will effectively display the user's schedules and assignments.</li>
+  <li><b>FR-412:</b> The system's visualization will be able to be changed dynamically so that the user has the option to change the presentation to their liking.
+</li>
 </ul>
 <h3>Non-Functional Requirements</h3>
 <h3>Performance</h3>
 <ul>
-  <li><b>NFR-401:</b> The system should generate schedules within 3 seconds...</li>
-  <li><b>NFR-402:</b> The system should check for any changes from Canvas...</li>
-  <li><b>NFR-403:</b> The system should do weekly inquiries...</li>
+  <li><b>NFR-401:</b> The system should generate schedules within 3 seconds after receiving input and any changes.
+</li>
+  <li><b>NFR-402:</b> The system should check for any changes from Canvas (regarding assignments) atleast every hour, to maintain syncrohnization.
+</li>
+  <li><b>NFR-403:</b> The system should do weekly inquiries from the user to ensure its schedules are effective.
+</li>
 </ul>
 <h3>Scalability</h3>
 <ul>
-  <li><b>NFR-404:</b> The system should be able to handle large amounts of data...</li>
-  <li><b>NFR-405:</b> The system should be able to support large amounts of users...</li>
-  <li><b>NFR-406:</b> The system should be able to support all of Canvas' users...</li>
+  <li><b>NFR-404:</b> The system should be able to handle large amounts of data being inputted and create effective schedules.
+</li>
+  <li><b>NFR-405:</b> The system should be able to support large amounts of users querying the companion at the same time without drops in performance.
+</li>
+  <li><b>NFR-406:</b> The system should be able to support all of Canvas' users bases among all schools that utilize Canvas.
+</li>
 </ul>
 <h3>Security</h3>
 <ul>
-  <li><b>NFR-407:</b> The system should maintain security just like that of Canvas...</li>
-  <li><b>NFR-408:</b> Any information being shared between APIs should be encrypted...</li>
-  <li><b>NFR-409:</b> Consent must be given from users...</li>
+  <li><b>NFR-407:</b> The system should maintain security just like that of Canvas and require two-factor authentication.
+</li>
+  <li><b>NFR-408:</b> Any information being shared between APIs should be encrypted and hard for attackers to obtain.</li>
+  <li><b>NFR-409:</b> Consent must be given from users at all times when new actions on sensitive data are about to be performed.
+</li>
 </ul>
 <h3>Adaptability</h3>
 <ul>
-  <li><b>NFR-410:</b> The AI companion should be able to learn from previous adjustements...</li>
-  <li><b>NFR-411:</b> The AI companion should be able to adapt as Canvas and other future APIs...</li>
+  <li><b>NFR-410:</b> The AI companion should be able to learn from previous adjustements to users' schedules to refine future schedules.
+</li>
+  <li><b>NFR-411:</b>  The AI companion should be able to adapt as Canvas and other future APIs are changing.
+</li>
 </ul>
   </div>
 </main>

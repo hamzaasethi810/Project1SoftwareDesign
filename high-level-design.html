@@ -30,7 +30,7 @@
   for a direct set of functionality ranging from event registration and forming custom achievements for users, making a leaderboard to compare 
   with friends, and admin control to ensure small changes without having to write new code. Together, these modules collectivaly address all 
   the functional and non-functional requirements for the game and achievements layer of the Ai Academic Companion.</p>
-  <img src="assets/images/GA_HLD.png" alt="Game and Achievements Diagram" class="image">
+  <img src="assets/images/GA_HLD.png" alt="Game and Achievements Diagram" class="image" width="100%">
   <ul>
   <li><b>Connector Module: </b>Receives study/quiz/weekly events from the external subsystems, ensures they're in the correct format to be processed by this system and creates and stores events to the game engine</li>
   <li><b>Progression Module: </b>Calculates XP, manages streaks, evaluates criteria against the catalog, and rewards user with badges and acheivements</li>
@@ -538,7 +538,7 @@ The UI is the interactive layer between the user and the backend, which will be 
   <li><b>ChatGPT/Openai API:</b> This will be the LLM used to generate the schedules. </li>
   <li><b>Canvas: </b>This will be used to gather user's assignments, due dates, and events</li>
 </ul>
-<img src="assets/images/schedule_HLD.png" class="image">
+<img src="assets/images/schedule_HLD.png" class="image" width="120%">
 <p><b>Data Integration Layer:</b> This will be used to gather prerequisite data to send to the AI companion to start the schedule generation process. The prerequisite date includes: assignments
   from the user's profile on Canvas (due dates and names), user's preferred gym hours, study hours, breaks, personal time, and any other extracurriculars that the user would like to be on 
   their schedule.
@@ -566,7 +566,7 @@ The UI is the interactive layer between the user and the backend, which will be 
 </ul>
 <h3>Main Schedule Generation</h3>
 <ul>
-  <li><b>Classes:</b> AI Companion, User Edits, Schedule</li>
+  <li><b>Classes:</b> AI Companion, Schedule</li>
   <li>Responsibilities:</li>
   <ul>
     <li>Receive data from the Data Integration Layer to query LLM to generate the user's schedule. (FR-404, NFR-401)</li>
@@ -596,8 +596,135 @@ The UI is the interactive layer between the user and the backend, which will be 
     <li>Any feedback the AI Companion requests will be presented here and any feedback will be send back to the AI Companion. (FR-408, FR-410) </li>
   </ul>
 </ul>
+<h3>Traceability Matrix: Scheduler Requirements to Design Components</h3>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-top: 20px;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th>Requirement ID</th>
+      <th>Design Component(s)</th>
+      <th>Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>FR-401</td>
+      <td>User Data</td>
+      <td>Storing user specified data to further personalize schedules.</td>
+    </tr>
+    <tr>
+      <td>FR-402</td>
+      <td>API Data Integration</td>
+      <td>Obtaining user's student information to generate schedules around classes</td>
+    </tr>
+    <tr>
+      <td>FR-403</td>
+      <td>User Data</td>
+      <td>Increase user information to include blocks of free time for personal use for users.</td>
+    </tr>
+    <tr>
+      <td>FR-404</td>
+      <td>AI Companion</td>
+      <td>AI will utilize the information to create optimized schedules.</td>
+    </tr>
+    <tr>
+      <td>FR-405</td>
+      <td>AI Companion</td>
+      <td>AI will respond to any updates to create a new schedule that contains the updates.</td>
+    </tr>
+    <tr>
+      <td>FR-406</td>
+      <td>User Edits</td>
+      <td>User is able to make edits to schedule to refine schedule.</td>
+    </tr>
+    <tr>
+      <td>FR-407</td>
+      <td>Notification System</td>
+      <td>User is able to be notified of any changes/updates to the system and their schedules.</td>
+    </tr>
+    <tr>
+      <td>FR-408</td>
+      <td>User Feedback</td>
+      <td>User is able to query AI on why certain design decisions of the schedule were made, and provide feedback.</td>
+    </tr>
+    <tr>
+      <td>FR-409</td>
+      <td>User Feedback</td>
+      <td>AI will provide feedback to the user regarding sleeping habits to ensure they are able to maintain the schedule.</td>
+    </tr>
+    <tr>
+      <td>FR-410</td>
+      <td>User Feedback</td>
+      <td>User is able to provide feedback regarding their schedules so that the AI can learn and become more personalized and efficient.</td>
+    </tr>
+    <tr>
+      <td>FR-411</td>
+      <td>Calendar</td>
+      <td>User will be provided an interactable visual of their schedule.</td>
+    </tr>
+    <tr>
+      <td>FR-412</td>
+      <td>Calendar</td>
+      <td>User is able to change the calendar so that it is more refined and personalized.</td>
+    </tr>
+    <tr>
+      <td>NFR-401</td>
+      <td>Data Integration Layer</td>
+      <td>Perfomring API calls should be quick and seamless</td>
+    </tr>
+    <tr>
+      <td>NFR-402</td>
+      <td>Data Integration Layer</td>
+      <td>Constant checks to APIs will ensure system is synchronized with enducational tools.</td>
+    </tr>
+    <tr>
+      <td>NFR-403</td>
+      <td>User Feeback</td>
+      <td>Constant requests for user feedback will ensure AI is creating optimized schedules.</td>
+    </tr>
+    <tr>
+      <td>NFR-404</td>
+      <td>Database, Frontend Layer</td>
+      <td>Storing data using an external database will allow for a much larger number of users to be able to use the AI academic companion at once.</td>
+    </tr>
+    <tr>
+      <td>NFR-405</td>
+      <td>AI Companion, Frontend Layer</td>
+      <td>Using an LLM that supports large amounts of users without performance drop off.</td>
+    </tr>
+    <tr>
+      <td>NFR-406</td>
+      <td>Data Integration Layer</td>
+      <td>Using an API that will be able to look up a student's information regardless of what school they are enrolled in.</td>
+    </tr>
+    <tr>
+      <td>NFR-407</td>
+      <td>Data Integration Layer</td>
+      <td>Ensure secruity through two factor authentication.</td>
+    </tr>
+    <tr>
+      <td>NFR-408</td>
+      <td>Entire System</td>
+      <td>Ensure any data being transmitted between layers is encrypted.</td>
+    </tr>
+    <tr>
+      <td>NFR-409</td>
+      <td>Entire System</td>
+      <td>Consent is requested whenver new actions are being performed on student data.</td>
+    </tr>
+    <tr>
+      <td>NFR-410</td>
+      <td>Database</td>
+      <td>Store previous iterations of schedules so that the AI can learn how a user prefers their schedules.</td>
+    </tr>
+    <tr>
+      <td>NFR-411</td>
+      <td>Data Integration Layer, AI Companion</td>
+      <td>Any changes from Canvas and other educational tools are provided to AI to ensure updated schedules.</td>
+    </tr>
+  </tbody>
+</table>
 
-  </div>
+</div>
 </main>
 <footer>
   <div class="wrapper prevnext">
