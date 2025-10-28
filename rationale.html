@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Academic Companion — CS 5744 Project 1</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+<header>
+  <div class="wrapper">
+    <div class="brand">
+      <h1>CS 5744 — AI Academic Companion </h1>
+      <small class="small">Rami Ghaleb - Ethan Crouse - Hamza Sethi - Nart Hakij - Shoaib Cheema</small>
+    </div>
+    <nav>
+      <a href="index.html" class="">Background</a> <a href="requirements.html" class="">Requirements</a>  <a href="high-level-design.html" class="">High Level Design</a> <a href="rationale.html" class="current">Design Rationale</a>  <a href="full-text.html" class="">Full Text</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="wrapper">
+<h1>Design Rationale</h1>
+
+<u><h2>Game and Achievement Functionality</h2></u>
+<h3>D1: Using Modulars for Game System</h3>
+<p>Supports: FR-001, FR-002, FR-003, FR-004, NFR-003</p>
+<p>The decision to divide the game subsystem into four modulars: Connector, Progression, Social, and Admin ensures the maintainability and scalability. Each modular has a defined purpose allowing the developers to pinpoint where changes need to be made upon extending functionality without breaking the entire system.</p>
+<h3>D2: Using Event Driven Architecture</h3>
+<p>SUpports: FR-003, FR-004, FR-005, FR-009, NFR-001</p>
+<p>Having the system has events such as award given, allows for updates to be triggered in sync allowing for processes to happen in parallel. It ensures that XP and streak updates happen in background in less than second.</p>
+<h3>D3: Scoring</h3>
+<p>Supports: FR-001, FR-002, FR-003, FR-005, FR-011</p>
+<p>In the Prgoression implementing the system ensures that XP and achievements are calculated in a way that is easy to follow and reprducible. By removing ambiguity in the reward system the developers are able to audit, test, and recompute progress when rules are changed. </p>
+<h3>D4: Admin and Backfill</h3>
+<p>Supports: FR-001, NFR-003</p>  
+<p>By providing an Admin module we are able to make changes such as updating the catelog of wards and recompute awards when we have errors or need routine maintenance without having to change the code.</p>
+<h3>D5: Anti-Cheat and Input Validation</h3>
+<p>Supports: FR-010, NFR-002, NFR-003</p>
+<p>By validating and flagging suspicoud events, or input data before being passed to the progression modular we are able to prevent any bad or suspicious data from getting to the game engine which would risk hackers and false data from getting into the game.</p>
+
+<u><h2>Upload Profile</h2></u>
+<section id="rationale-upload-profile">
+  <!-- <h3>D1: Extension-adjacent import with adapters</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#FR-101">FR-101</a>, <a href="requirements.html#NFR-101">NFR-101</a>.  
+  <strong>Decision:</strong> Use Canvas and Calendar adapters behind an API Gateway; keep import initiation in the extension context.  
+  <strong>Why:</strong> Encapsulates provider quirks and enforces least-privilege scopes while keeping the workflow in context.</p>
+
+  <h3>D2: Versioned profiles plus immutable audit</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#FR-105">FR-105</a>, <a href="requirements.html#NFR-104">NFR-104</a>.  
+  <strong>Decision:</strong> Each import writes a new immutable version and appends audit metadata.  
+  <strong>Why:</strong> Safe rollback and traceability for debugging/compliance.</p>
+
+  <h3>D3: Asynchronous import pipeline</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#NFR-102">NFR-102</a>.  
+  <strong>Decision:</strong> Acknowledge fast (202 + jobId) and process heavy parsing/normalization in background workers.  
+  <strong>Why:</strong> Meets latency targets and isolates spikes from provider APIs.</p>
+
+  <h3>D4: Resilience to third-party outages</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#NFR-103">NFR-103</a>, <a href="requirements.html#FR-101">FR-101</a>, <a href="requirements.html#FR-103">FR-103</a>.  
+  <strong>Decision:</strong> Permit file-based import when adapters are unavailable; queue retries and mark state “stale.”  
+  <strong>Why:</strong> Preserves core functionality despite LMS/calendar downtime.</p>
+
+  <h3>D5: Schema mapping, validation, and de-duplication</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#FR-106">FR-106</a>, <a href="requirements.html#FR-107">FR-107</a>, <a href="requirements.html#FR-108">FR-108</a>, <a href="requirements.html#FR-109">FR-109</a>.  
+  <strong>Decision:</strong> Central mapping table + validator + duplicate detector + version hashing for idempotency.  
+  <strong>Why:</strong> Ensures clean, consistent inputs and avoids redundant versions.</p>
+
+  <h3>D6: Constraints as rules</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#FR-111">FR-111</a>.  
+  <strong>Decision:</strong> Represent constraints as RRULE-style rules with exceptions and priority.  
+  <strong>Why:</strong> Deterministic for downstream planning; compact and expressive.</p>
+
+  <h3>D7: Security, access control, and compliance</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#FR-113">FR-113</a>, <a href="requirements.html#NFR-109">NFR-109</a>, <a href="requirements.html#NFR-110">NFR-110</a>, <a href="requirements.html#NFR-111">NFR-111</a>.  
+  <strong>Decision:</strong> Owner-only access; tokens in KMS; FERPA-aligned deletion; backward-compatible schema evolution.  
+  <strong>Why:</strong> Protects student data and maintains institutional trust over time.</p>
+
+  <h3>D8: Observability & guardrails</h3>
+  <p><strong>Reqs:</strong> <a href="requirements.html#NFR-106">NFR-106</a>, <a href="requirements.html#NFR-107">NFR-107</a>, <a href="requirements.html#NFR-108">NFR-108</a>, <a href="requirements.html#NFR-112">NFR-112</a>.  
+  <strong>Decision:</strong> Correlated logs/metrics, adapter rate limits with backoff, storage bounds per version, and backups with defined RPO/RTO.  
+  <strong>Why:</strong> Fast troubleshooting, protection from abuse, and recoverability.</p> -->
+  <h3>D1: Keep import simple and in context</h3>
+  <p><strong>Supports:</strong> FR-101, NFR-101.  
+  We start the import where students already are and bring in only what is needed. This reduces confusion and risk.</p>
+
+  <h3>D2: Save each import as a version</h3>
+  <p><strong>Supports:</strong> FR-105, FR-112, NFR-104.  
+  Versions make changes easy to understand and easy to undo. The audit record shows when and where data came from.</p>
+
+  <h3>D3: Do basic checks and cleanup</h3>
+  <p><strong>Supports:</strong> FR-106, FR-107, FR-108, FR-109.  
+  Mapping, validation, duplicate handling, and “same data” checks keep the profile clean and stable.</p>
+
+  <h3>D4: Store time blocks as simple rules</h3>
+  <p><strong>Supports:</strong> FR-111.  
+  A small rules format (repeat, exceptions, priority) is easy to read and reuse later.</p>
+
+  <h3>D5: Read calendars to spot overlaps</h3>
+  <p><strong>Supports:</strong> FR-103, FR-115.  
+  Reading events (not writing) is enough to warn about conflicts and keep a short summary.</p>
+
+  <h3>D6: Be fast and steady</h3>
+  <p><strong>Supports:</strong> NFR-102, NFR-103, NFR-105, NFR-106, NFR-107.  
+  Start quickly, finish heavy work in the background, handle slow services gracefully, and keep simple logs and counters.</p>
+
+  <h3>D7: Protect data and remain compliant</h3>
+  <p><strong>Supports:</strong> FR-113, NFR-109, NFR-110, NFR-111, NFR-112.  
+  Limit access to owners, manage secrets safely, support delete-on-request, keep old data usable, and keep backups.</p>
+</section>
+
+<u><h2>AI Tutor</h2></u>
+
+<h3>Overview</h3>
+<p>
+  The AI Tutor stands as the most advanced and innovative element within the AI Academic Companion. Our design approach 
+  focuses on delivering precise results and individualized solutions which seamlessly integrate with current educational 
+  systems. The system design protects student information privacy while maintaining its ability to expand. The following 
+  section explains the fundamental design choices which were implemented for this component.
+</p>
+
+<h3>Key Design Decisions</h3>
+
+<h4>Decision 1: The system uses a structured design with distinct sections which handle different functions</h4>
+<p><strong>Driven by Requirements:</strong> NFR-201.6 (Maintainability) and NFR-201.7 (Integration Compatibility)</p>
+<p><strong>Decision:</strong> The system uses a three-layered structure which separates Presentation from Business Logic and Data. The system contains three distinct layers which maintain defined interfaces between them.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Maintainability</strong>: The system enables AI model updates through separate layers which prevent changes to presentation or data layers. The system enables independent development and testing and deployment of each layer.</li>
+  <li><strong>Testability</strong>: The system enables developers to perform unit testing on individual services because each service has defined boundaries.</li>
+  <li><strong>Scalability</strong>: The system allows different layers to scale independently based on system load requirements. The AI Model Orchestration Service enables horizontal scaling during peak usage without requiring the entire system to scale.</li>
+  <li><strong>Team Collaboration</strong>: Different team members can work on separate layers without creating merge conflicts or dependencies.</li>
+</ul>
+<p><strong>Alternatives Considered:</strong></p>
+<ul>
+  <li><strong>Monolithic Architecture</strong>: The monolithic design approach received rejection because it merged AI processing with UI logic into a single unit. The tight integration between AI processing and UI logic makes system updates dangerous and testing procedures complicated.</li>
+  <li><strong>Event-Driven Microservices</strong>: The event-driven microservices approach delivers exceptional scalability but the team decided against its implementation for our first deployment. The system would experience increased delays when students used the tutoring service for synchronous learning.</li>
+</ul>
+
+<h4>Decision 2: External LLM API vs. Self-Hosted Model</h4>
+<p><strong>Driven by Requirements:</strong> FR-201.1 (NLP Query Interface) and NFR-201.1 (Response Time) and 
+  NFR-201.2 (Accuracy) and NFR-201.6 (Maintainability)</p>
+<p><strong>Decision:</strong> The system depends on a commercial large language model API for its primary inference operations. The system operates without maintaining its own open-source model.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Accuracy and Capability</strong>: The current commercial large language models demonstrate superior performance than most open-source alternatives. The models demonstrate exceptional performance in reasoning tasks and instruction execution and factual information accuracy. Educational applications require these specific capabilities because students need accurate information to learn effectively.</li>
+  <li><strong>Reduced Infrastructure Costs</strong>: The API pricing model provides better cost predictability than self-hosted model deployment because it scales with actual usage.</li>
+  <li><strong>Automatic Updates</strong>: The API providers maintain model updates through automatic processes which eliminate the need for our team to perform model retraining or fine-tuning. The system receives automatic state-of-the-art model improvements through our subscription.</li>
+  <li><strong>Faster Time to Market</strong>: The integration process for APIs takes only a few days to complete. The deployment process for self-hosted models requires multiple months of optimization work.</li>
+  <li><strong>Response Time</strong>: The system provides streaming responses through its modern large language model API. The system uses a worldwide content delivery network (CDN) for distribution. The system provides features which match or surpass the performance of self-hosted solutions.</li>
+</ul>
+<p><strong>Trade-offs:</strong></p>
+<ul>
+  <li><strong>Privacy Concerns</strong>: The process of sending student queries to external APIs creates privacy risks regarding student data. We protect student data privacy through query anonymization. The system removes all personal information from the data. The system protects data through encryption during its transfer process. The system selects providers who follow FERPA regulations.</li>
+  <li><strong>Vendor Lock-in</strong>: The AI Model Orchestration Service includes a provider-agnostic interface which enables seamless transitions between different large language model providers.</li>
+  <li><strong>Cost at Scale</strong>: The costs of API services will increase when the system reaches its projected usage threshold. The system tracks usage patterns. The system stores frequently asked questions in memory for faster access. The system uses smaller less expensive models for basic questions while using external APIs for complex tasks.</li>
+</ul>
+<p><strong>Future Evolution</strong>: The system enables future development through its abstraction layer which allows switching between external and self-hosted models. The system uses self-hosted models for basic queries but external APIs for complex reasoning tasks.</p>
+
+<h4>Decision 3: Context-Aware Tutoring via Canvas Integration</h4>
+<p><strong>Driven by Requirements:</strong> FR-201.2 (Canvas Content Integration) and NFR-201.2 (Accuracy)</p>
+<p><strong>Decision:</strong> The AI Tutor retrieves and indexes course content from Canvas. This grounds responses in official course materials. The system does not rely solely on the large language model's pre-trained knowledge.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Accuracy and Relevance</strong>: Large language models can hallucinate facts. They may provide generic information that does not align with specific course content. By retrieving the professor's lecture notes and assigned readings and syllabi we ensure tutoring aligns with what students are actually expected to learn.</li>
+  <li><strong>Instructor Autonomy</strong>: The teaching methods of professors allow them to present subjects through alternative approaches while focusing on specific conceptual frameworks. The use of course-specific materials for response development upholds the instructional design principles that instructors established.</li>
+  <li><strong>Up-to-Date Information</strong>: The content of courses undergoes periodic modifications between academic semesters. The Canvas integration system provides the tutor with current information without requiring manual updates.</li>
+</ul>
+<p><strong>Implementation Approach:</strong></p>
+<ul>
+  <li>Use <strong>Retrieval-Augmented Generation (RAG)</strong>: The Content Retrieval Service performs semantic search across indexed Canvas documents when students submit their questions. The search system identifies relevant sections from the documents. The system includes retrieved passages as additional information which serves as input for the large language model to generate responses.</li>
+  <li><strong>Vector Embeddings</strong>: The process of converting course documents into vector embeddings uses Sentence Transformers. The system maintains these vector representations in a vector database. The system enables users to perform quick semantic similarity searches.</li>
+  <li><strong>Chunking Strategy</strong>: The system divides documents into sections which contain 500 words of content. The system uses overlapping sections to connect different parts of the document. The system maintains semantic coherence between retrieved passages through this approach.</li>
+</ul>
+<p><strong>Challenges and Mitigations:</strong></p>
+<ul>
+  <li><strong>Challenge</strong>: The system faces a challenge because not all educational materials exist in formats that machines can read. The PDF documents contain scanned images instead of text.
+    <br><strong>Mitigation</strong>: The system will perform OCR scanning on scanned documents and provide alternative text when needed from professor-supplied content.</li>
+  <li><strong>Challenge</strong>: The Canvas API imposes rate limits which could lead to delayed content retrieval.
+    <br><strong>Mitigation</strong>: Implement aggressive caching. Use background refresh jobs that pre-fetch content during off-peak hours.</li>
+</ul>
+
+<h4>Decision 4: Adaptive Quiz Generation with Spaced Repetition</h4>
+<p><strong>Driven by Requirements:</strong> FR-201.3 (Adaptive Quiz Generation) and FR-201.7 (Progress Tracking)</p>
+<p><strong>Decision:</strong> We implement an adaptive quiz system that adjusts difficulty based on student performance. The system applies spaced repetition principles to reinforce learning.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Personalized Learning</strong>: Research shows adaptive assessments improve learning outcomes. They keep students in their zone of proximal development. This means challenging enough to promote growth without causing frustration.</li>
+  <li><strong>Efficient Study Time</strong>: Spaced repetition revisits concepts at increasing intervals. This approach is proven to enhance long-term retention. By prioritizing topics the student is likely to forget we make study sessions more effective.</li>
+  <li><strong>Engagement</strong>: Adaptive quizzes feel responsive and personalized. This increases student motivation compared to static practice problems.</li>
+</ul>
+<p><strong>Implementation Details:</strong></p>
+<ul>
+  <li><strong>Difficulty Adjustment Algorithm</strong>: Track student performance per topic using an Elo-like rating system. If a student consistently answers questions correctly increase difficulty. Provide more complex problems and multi-step reasoning. If struggling provide simpler foundational questions.</li>
+  <li><strong>Spaced Repetition</strong>: Use the SM-2 algorithm to schedule topic reviews. Topics mastered recently are reviewed less frequently. Topics where the student struggled are reviewed sooner.</li>
+  <li><strong>Question Generation</strong>: Leverage the large language model to generate diverse question types. These include multiple choice and short answer and code completion from course content. Validate generated questions by checking against answer keys or instructor-provided materials when available.</li>
+</ul>
+<p><strong>Alternatives Considered:</strong></p>
+<ul>
+  <li><strong>Static Question Banks</strong>: Easier to implement but lacks personalization. The approach becomes repetitive.</li>
+  <li><strong>Manual Question Curation</strong>: Ensures high quality but does not scale across diverse courses. It requires significant instructor effort.</li>
+</ul>
+
+<h4>Decision 5: Multi-Level Explanations and Learning Styles</h4>
+<p><strong>Driven by Requirements:</strong> FR-201.5 (Concept Explanation with Multi-Modal Learning) and 
+  NFR-201.5 (Usability and Accessibility)</p>
+<p><strong>Decision:</strong> We provide explanations at multiple levels of detail. These levels include brief and moderate and comprehensive. We use diverse instructional methods. These methods include text and analogies and step-by-step breakdowns and visual aids.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Diverse Learning Preferences</strong>: Students learn differently. Some prefer concise overviews. Others need detailed walkthroughs. Offering choice increases effectiveness across the student population.</li>
+  <li><strong>Time Constraints</strong>: A student with 10 minutes before class benefits from a quick summary. A student with an hour benefits from a deep dive. Multi-level explanations respect time availability.</li>
+  <li><strong>Cognitive Load Management</strong>: Starting with simple explanations and allowing students to request more detail prevents overwhelming beginners. This approach still supports advanced learners.</li>
+  <li><strong>Accessibility</strong>: Some students benefit from visual aids or analogies. This includes those with learning disabilities. Multi-modal approaches align with Universal Design for Learning principles.</li>
+</ul>
+<p><strong>Implementation:</strong></p>
+<ul>
+  <li>Prompt the large language model with explicit instructions. For example: Explain this concept briefly in 2 to 3 sentences. Or: Provide a comprehensive explanation with examples and analogies.</li>
+  <li>Visual learners should integrate with diagram generation APIs for their learning needs. The system uses Mermaid.js to create flowcharts which help users understand algorithms and data structures.</li>
+  <li>The system provides two modes of explanation for users to understand concepts at different levels. The system provides two modes of operation for users to choose between basic explanations for beginners and detailed technical information for exam preparation.</li>
+</ul>
+
+<h4>Decision 6: Privacy-First Data Architecture</h4>
+<p><strong>Driven by Requirements:</strong> NFR-201.3 (Privacy and Data Security)</p>
+<p><strong>Decision:</strong> The AI Tutor pipeline uses end-to-end encryption together with data anonymization and FERPA-compliant data handling methods for complete protection.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Legal Compliance</strong>: The law requires educational institutions to protect student records under FERPA regulations. The loss of federal funding becomes possible when institutions fail to comply with FERPA regulations. The system needs to fulfill all requirements which exceed the minimum standards.</li>
+  <li><strong>Trust and Adoption</strong>: Students will adopt the system and use it honestly because they feel secure about their privacy.</li>
+  <li><strong>Ethical Responsibility</strong>: Students who discuss their academic mistakes or misunderstandings need their information to remain confidential.</li>
+</ul>
+<p><strong>Key Privacy Measures:</strong></p>
+<ul>
+  <li><strong>Encryption</strong>: The system uses TLS 1.3 for secure data transmission through encryption and AES-256 for protecting data stored in databases.</li>
+  <li><strong>Anonymization</strong>: The system removes all personal information from external large language model API requests through anonymization processes. The system removes all student identification information and personal names from queries. The system stores all analytics data in aggregated form.</li>
+  <li><strong>Access Controls</strong>: The system implements role-based access control to restrict student data access to authorized services. Students maintain full control to delete their tutoring records whenever they want.</li>
+  <li><strong>Audit Logging</strong>: The system maintains complete records of all data access activities for compliance inspections without revealing any content information.</li>
+  <li><strong>Vendor Selection</strong>: The system selects vendors who provide Business Associate Agreements that fulfill FERPA compliance requirements.</li>
+</ul>
+
+<h4>Decision 7: Modular Service-Oriented Design for Business Logic</h4>
+<p><strong>Driven by Requirements:</strong> NFR-201.6 (Maintainability) and NFR-201.7 (Integration Compatibility)</p>
+<p><strong>Decision:</strong> The Business Logic Layer consists of separate services which perform Query Processing and Content Retrieval and Quiz Generation and Explanation and Summarization and Recommendation. The system operates without using a single monolithic tutoring engine.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Single Responsibility Principle</strong>: Each service maintains a single defined responsibility which makes the system easier to understand and decreases the number of programming errors.</li>
+  <li><strong>Independent Evolution</strong>: The system allows developers to enhance the Quiz Generation algorithm without affecting the Summarization Service operations. The system maintains lower risk of regression because of this approach.</li>
+  <li><strong>Parallel Development</strong>: The system enables team members to work on separate services at the same time.</li>
+  <li><strong>Selective Scaling</strong>: The system enables users to distribute resources between quiz generation and summarization functions based on their current usage levels.</li>
+  <li><strong>Testability</strong>: The system enables developers to test individual service components through mock interface creation.</li>
+</ul>
+<p><strong>Communication Pattern</strong>: The system uses RESTful APIs for synchronous requests between services but message queues for handling asynchronous background tasks such as content indexing.</p>
+
+<h4>Decision 8: Recommendation Engine with Multi-Factor Prioritization</h4>
+<p><strong>Driven by Requirements:</strong> FR-201.6 (Study Session Recommendations) and FR-201.7 (Progress Tracking)</p>
+<p><strong>Decision:</strong> The system uses a weighted scoring algorithm to generate study recommendations for study activities. The algorithm evaluates student performance based on three factors which include deadline urgency and topic difficulty and knowledge gaps.</p>
+<p><strong>Rationale:</strong></p>
+<ul>
+  <li><strong>Balances Multiple Concerns</strong>: The system handles multiple student requirements by letting them prepare for upcoming deadlines and work on their fundamental knowledge gaps and challenging subjects. A single-factor approach fails to support long-term learning needs. The system fails to detect knowledge gaps when it focuses only on upcoming deadlines.</li>
+  <li><strong>Data-Driven Personalization</strong>: The system uses performance data from quizzes and time spent on topics to detect student weaknesses which it uses for recommendation purposes.</li>
+  <li><strong>Transparent and Tunable</strong>: The system allows users to modify its scoring mechanism through feedback collection and performance testing results analysis.</li>
+</ul>
+<p><strong>Formula Details:</strong></p>
+<ul>
+  <li><strong>Urgency</strong>: The system calculates urgency by dividing deadline proximity to the semester maximum number of days. The system normalizes this value between 0 and 1.</li>
+  <li><strong>Difficulty</strong>: The system uses historical class-wide average quiz scores to determine topic difficulty levels. Students face more challenging topics when their quiz scores are lower.</li>
+  <li><strong>Knowledge Gap</strong>: The system calculates knowledge gaps by subtracting student performance from class average performance then dividing by class average performance.</li>
+</ul>
+<p><strong>User Control</strong>: Users maintain complete control to modify system recommendations. Users can select specific topics for study through the system but the system provides default recommendations which most users find reliable.</p>
+
+<h3>Integration and Evolution Considerations</h3>
+
+<h4>Scheduler Integration</h4>
+<p>
+  The AI Tutor receives context about the current study session from the Scheduler component. This allows the tutor to automatically suggest relevant topics without requiring manual input. For example if the scheduler indicates a CS 5744 study block with 2 hours available the tutor proactively offers recommendations. The tutor might say: You have 2 hours for CS 5744. I recommend reviewing Design Patterns. The exam is in 3 days. You scored 60% on the last quiz. Would you like a summary or practice quiz?
+</p>
+
+<h4>Gamification Integration</h4>
+<p>
+  The AI Tutor generates progress information which the Gamification system uses for its operations. The system tracks student performance through their completed quizzes and their study streaks and their mastery of specific topics. The system operates through a continuous feedback mechanism. The Gamification system uses rewards to motivate students to use the tutoring service. The tutoring system generates substantial achievements which surpass random rewards.
+</p>
+
+<h4>Future Enhancements</h4>
+<ul>
+  <li><strong>Collaborative Learning</strong>: The system enables students to study together with the AI Tutor through collaborative learning sessions. The system enables students to learn from each other through peer-to-peer interaction.</li>
+  <li><strong>Instructor Dashboard</strong>: The system provides instructors with a dashboard that shows anonymous student performance data to identify their most challenging subjects. The system enables teachers to modify their teaching content based on student performance data.</li>
+  <li><strong>Voice Interface</strong>: The system enables users to access tutoring services through voice commands which allow them to use their voice for text-to-speech and speech-to-text functions during their daily activities.</li>
+  <li><strong>Advanced Personalization</strong>: The system uses advanced personalization techniques to optimize smaller open-source models through institutional data analysis. The system optimizes its performance to match the educational materials and teaching methods used at Virginia Tech.</li>
+</ul>
+
+<h3>Conclusion</h3>
+<p>
+  The AI Tutor system achieves a perfect equilibrium between state-of-the-art artificial intelligence functionality and operational engineering limitations. The system designers implemented a structured system design approach. The system uses external large language model APIs through multiple abstraction layers. The system bases its answers on materials that are relevant to the specific courses. The system focuses on protecting user privacy while keeping the system easy to maintain. The system achieves both strong performance and ethical operation through its design choices. The system design follows a modular structure which allows it to adapt to future AI developments and student requirements. The system provides a unified user experience through its complete integration with all system components. The system includes three main components which are the Scheduler and Canvas and Gamification. The system effectively solves the problem of students facing overwhelming academic work and poor time management skills.
+</p>
+
+<u><h2><b>UI</b></h2></u>
+    <b>D1: Keep the layout steady</b><br>
+    <b>Supports:</b> FR-303, FR-304, NFR-301, NFR-302<br>
+    Header stays at the top with navigation links and footer at the bottom with site links and social media links. The layout stays adaptive to screen sizes.<br><br>
+    
+    <b>D2: Intuitive Interaction</b><br>
+    <b>Supports:</b> FR-301, FR-302, NFR-301, NFR-30, FR-304, FR-305, NFR-302<br>
+    Users interact with either a button or text field. This way the website remains intuitive. The website can also be updated because more buttons or text fields can easily be added.<br><br>
+    
+    <b>D4: Error Messages</b><br>
+    <b>Supports:</b> FR-302, NFR-303<br>
+    Users will receive error messages if something is off with the website, so they do not get frustrated.<br><br>
+    
+    <b>D5: Reliable and strong performance.</b><br>
+    <b>Supports:</b> NFR-301, NFR-302, NFR-305<br>
+    Lightweight UI will improve performance so users can quickly access whatever they want on the website.<br><br>
+    
+    <b>D8: Security</b><br>
+    <b>Supports:</b> FR-307, NFR-304, NFR-310<br>
+    Users must be authenticated to access any features and will be timed out for inactivity.<br>
+
+<u><h2>Scheduler</h2></u>
+<h3>User Inputs</h3>
+<ul>
+  <li><b>Design Decision:</b> Having the user input their preferences.</li>
+  <li><b>Related Requirements:</b> FR-401, FR-403</li>
+</ul>
+<p>
+  In order to ensure the generated schedule from the AI is personalized, we thought that the user should be able to input more information regarding what should be apart of their schedules aside 
+  from classes and assignments. Including extracurricular activities and free time would provide more constraints to the AI to generate a more personalized schedule. This way, the user knows 
+  exactly when they need to do what and for how long. Moreover, including a desired sleep time will also help the user maintain a more organized schedule. 
+</p>
+<h3>Integration of AI</h3>
+<ul>
+  <li><b>Design Decision:</b> AI being used to generate the schedule for users.</li>
+  <li><b>Related Requirements</b> FR-404, FR-405, FR-406, FR-407, FR-409, NFR-401, NFR-402</li>
+</ul>
+<p>
+  The main reason why an AI was the basis of this project and why we thought it would be best used to create schedules for users, is because of an AIs ability to adapt and learn 
+  from data. As long as the user is feeding relevant and useful data, the AI will be able to provide effective schedules. Moreover, if the user were to manually edit parts of the scheduel and,
+  for example, switch a block of time dedicated for studying to working out, the AI will be able to learn from that change. This way, for future schedules, the AI will know that the user
+  prefers to workout before studying, or vice versa. Regardless, using an AI to generate schedules for users is one of the best ways to ensure personalization. The AI will begin to learn <lightning-modal-footer>
+  about the user and will become smarter with how it generates schedules. 
+</p>
+<h3>Storing Schedules in a Database</h3>
+<uL>
+  <li><b>Design Decision:</b> Storing old schedules in a database.</li>
+  <li><b>Related Requirements:</b> NFR-404, NFR-405, NFR-408, NFR-410 </li>
+</uL>
+<p> 
+  To further ensure that the AI will learn more about the user and its preferences, keeping track of the history of generated and edited schedules will help. After each manual change, from the user,
+  to the generated schedule, changes will be stored in the database that the AI can retrieve from and learn as new data is being fed into it. This creates an adaptive feeback loop where 
+  new data is constantly being fed to the AI to ensure maximum efficiency in creating effective and personalized schedules over time. 
+</p>
+<h3>User Edits and Feeback</h3>
+<ul>
+  <li><b>Design Decision:</b> The ability for the user to manually edit and change the generated schedule from the AI.</li>
+  <li><b>Related Requirements:</b> FR-406, FR-408, FR-410, FR-412, NFR-403 </li>
+</ul>
+<p>
+  The AI will not be able to account for random changes in a schedule that may occur in the real world to a user. At any point in time, something could occur with in a week that affects 
+  the user's ability to maintain their schedule. So, by giving the ability to manually edit the schedule, the user is able to easily re-correct their schedule and get a new schedule within 5 seconds.
+  Not only that, but if the AI was unable to properly/effectively provide a schedule that accounts for all of the user's preferences, the user can edit the schedule to fine tune the AI. This way,
+  the AI will be able to learn and get better at accounting for the user's preferences. 
+</p>
+
+  </div>
+</main>
+<footer>
+  <div class="wrapper prevnext">
+    <a href="high-level-design.html">Previous: High Level Design</a>
+    <a href="full-text.html">Next: Full Text</a>
+  </div>
+</footer>
+</body>
+</html>

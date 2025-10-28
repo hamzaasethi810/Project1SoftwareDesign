@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Academic Companion — CS 5744 Project 1</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+<header>
+  <div class="wrapper">
+    <div class="brand">
+      <h1>CS 5744 — AI Academic Companion </h1>
+      <small class="small">Rami Ghaleb - Ethan Crouse - Hamza Sethi - Nart Hakij - Shoaib Cheema</small>
+    </div>
+    <nav>
+      <a href="index.html" class="">Background</a> <a href="requirements.html" class="">Requirements</a>  <a href="high-level-design.html" class="current">High Level Design</a> <a href="rationale.html" class="">Design Rationale</a>  <a href="full-text.html" class="">Full Text</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="wrapper">
+<h1>High Level Design</h1>
+
+<u><h2>Game and Achievements</h2></u>
+<p>The Game and Achievements subsystem is designed using a modular, object-oriented architecture that enmphasizes scalability, maintainability, and event driven communication between modules. As shown in the figure 
+  below the system is divided into four primary managable modules: Connector, Progression, Social, and Admin. Each of the modules are responsibile 
+  for a direct set of functionality ranging from event registration and forming custom achievements for users, making a leaderboard to compare 
+  with friends, and admin control to ensure small changes without having to write new code. Together, these modules collectivaly address all 
+  the functional and non-functional requirements for the game and achievements layer of the Ai Academic Companion.</p>
+  <img src="assets/images/GA_HLD.png" alt="Game and Achievements Diagram" class="image">
+  <ul>
+  <li><b>Connector Module: </b>Receives study/quiz/weekly events from the external subsystems, ensures they're in the correct format to be processed by this system and creates and stores events to the game engine</li>
+  <li><b>Progression Module: </b>Calculates XP, manages streaks, evaluates criteria against the catalog, and rewards user with badges and acheivements</li>
+  <li><b>Social Module: </b>Maintains leaderboards (friends/class/school) and generates shareable achievement cards to be posted and be viewed by other uses to show off earned awards</li>
+  <li><b>Admin & Catalog Module: </b>Host the achievement catalog and the recompute/backfill jobs</li>
+</ul>
+
+<h3>Connector Module</h3>
+<p><b>Purpose: </b>Safely bring the external data into the game subsystem</p>
+<ul>
+  <li><b>Classes: </b>EventReader and AntiCheat</li>
+  <li>Responsibilties: </li>
+  <ul>
+    <li>Validate data being passed and ensures correct format (FR-010, NFR-002)</li>
+    <li>Apply an anti-cheat to detect for unrealistic or duplicate session and flags suspicious events (FR-010)</li>
+  </ul>
+  <li><b>Interfaces: </b></li>
+  <ul>
+    <li>POST game/event/user/{username}/week/{weekid} to store events (FR-009, NFR-003)</li>
+  </ul>
+</ul>
+<h3>Progression Module</h3>
+<p><b>Purpose:</b> Deterministic computation of XP, streaks, and achievements</p>
+<ul>
+  <li><b>Entities / Value Objects:</b> Player, Progress, Streak, Achievement, Reward</li>
+  <li><b>Classes:</b> GameEngine, ScoringStrategy, RulesEngine/Criteria, RewardIssuer, Progress Tracker</li>
+  <li><b>Responsibilities:</b>
+    <ul>
+      <li>Game Engine sends events to the scoring ScoringStrategy to collect xp values for each event (FR-003)</li>
+      <li>Game Engine passes the event data with the xp values to Criteria/Rules Engine to make custom achievable goals to set as acheivements for the user to reach in a given week (FR-002)</li>
+      <li>Stores achievements to be earned to Criteria API for user</li>
+      <li>When Game Engine hears an event from external systems it passes it to the progress tracker to store the event (FR-004)</li>
+      <li>After an event is stored in the progress tracker, the game engine asked the reward issuer if there are any rewards to be issued (FR-005)</li>
+      <li>Evaluate criteria against the catalog and award badges (FR-001, FR-002, FR-005)</li>
+      <li>Send notifications on badge/level changes (FR-005)</li>
+    </ul>
+  </li>
+  <li><b>Interfaces:</b>
+    <ul>
+      <li>GET /game/user/{username}/progress — progress, XP, level, streak, badges (FR-006, FR-009, NFR-003)</li>
+      <li>Domain Events: ProgressUpdated, BadgeAwarded, LevelUp</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Social Module</h3>
+<p><b>Purpose: </b>Way to view and showoff rankings and shareables to yourself and other users</p>
+<ul>
+  <li><b>Classes:</b> LeaderboardService, Leaderboard API, Share Card Generator</li>
+  <li><b>Responsibilities:</b>
+    <ul>
+      <li>Maintain leaderboards for friends/course/global with daily/weekly/semester windows (FR-007)</li>
+      <li>Respect privacy by supporting school only views to limit users max view of only students at their school</li>
+      <li>Generate shareable achievement card data and sends it to UI to make visual to display component containing user's username and badge metadata (FR-008)</li>
+    </ul>
+  </li>
+  <li><b>Interfaces:</b>
+    <ul>
+      <li>GET /game/leaderboards?scope={timeframe, school} (FR-009, NFR-003)</li>
+      <li>GET /game/sharecard/{achievementId} (FR-009, NFR-003)</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Admin Module</h3>
+<p><b>Purpose:</b> Safe testing and fixing of the game</p>
+<ul>
+  <li><b>Classes:</b> CatalogRepository, Admin API, RecomputeWorker</li>
+  <li><b>Responsibilities:</b>
+    <ul>
+      <li>Keeps database of achievements/quests with schema validation, visibility, and season windows (FR-001)</li>
+      <li>Recompute/backfill user progress when rules change (FR-011)</li>
+    </ul>
+  </li>
+  <li><b>Interfaces:</b>
+    <ul>
+      <li>POST /game/admin/catalog</li>
+      <li>POST /game/admin/recompute</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Data Views</h3>
+<ul>
+  <li><b>Catalog Item:</b> { id, title, icon, rarity, criteria, rewards, season_window, active }</li>
+  <li><b>Player Progress:</b> { playerId, xp, level, streak{days, lastActive, graceLeft}, badges[] }</li>
+  <li><b>Leaderboard Row:</b> { scope, window, rank, username, score, username }</li>
+</ul>
+
+<u><h2>Upload Profile</h2></u>
+<section id="components">
+</section>
+
+<h2>Components</h2>
+  <ul>
+    <li><strong>C-01 Extension</strong>: Starts the import and shows basic results. [FR-101, FR-102, FR-103, FR-104]</li>
+    <li><strong>C-04 Profile</strong>: Holds profiles, versions, rules, and provenance. [FR-101, FR-105, FR-109, FR-111, FR-112, FR-114, NFR-104]</li>
+    <li><strong>C-07 Canvas</strong>: Connects to Canvas and turns incoming data into a common format. [FR-101, FR-106, FR-107, FR-108, NFR-101]</li>
+    <li><strong>C-08 Calendar</strong>: Reads events (read-only) to help find overlaps. [FR-103, FR-115]</li>
+    <li><strong>C-05 Gateway</strong>: Routes requests and manages background work. [NFR-102, NFR-107]</li>
+    <li><strong>C-10 Access</strong>: Handles permissions and secure access. [FR-113, NFR-101, NFR-109]</li>
+    <li><strong>C-11 Storage</strong>: Databases, files, background jobs, and backups. [FR-110, FR-112, NFR-102, NFR-108, NFR-112]</li>
+  </ul>
+
+  <h2>Flow</h2>
+  <ol>
+    <li><em>Start</em>: The user begins an import and picks a source (Canvas or file). [FR-101]</li>
+    <li><em>Connect</em>: The system gets access to Canvas when needed, or accepts the file and stores it. [FR-101, NFR-101, NFR-109]</li>
+    <li><em>Format</em>: Incoming fields are mapped to a common format. [FR-106]</li>
+    <li><em>Check</em>: The system does basic checks (codes, dates, times). Invalid rows are noted. [FR-107]</li>
+    <li><em>Clean Up</em>: Obvious duplicates are merged. [FR-108]</li>
+    <li><em>Same Data</em>: If the data is the same as before, no new version is created. [FR-109]</li>
+    <li><em>Blocks and Settings</em>: Time blocks and simple preferences are saved. [FR-102, FR-104, FR-111]</li>
+    <li><em>Overlaps</em>: Calendar events are read and a short overlap summary is stored. [FR-103, FR-115]</li>
+    <li><em>Save</em>: A new version with source details and an audit record is created. [FR-105, FR-112, FR-114, NFR-104]</li>
+    <li><em>When Services Are Down</em>: File import still works; the system will try outside services again later. [NFR-103]</li>
+    <li><em>Timeliness</em>: The import starts quickly and longer work runs in the background. [NFR-102]</li>
+  </ol>
+
+  <h2>System Qualities</h2>
+  <ul>
+    <li>Most imports should finish successfully over time. [NFR-105]</li>
+    <li>Keep basic logs and counts for troubleshooting. [NFR-106]</li>
+    <li>Use safe request limits with backoff when needed. [NFR-107]</li>
+    <li>Keep versions small and limit how many are stored. [NFR-108]</li>
+    <li>Handle secrets and tokens safely. [NFR-109]</li>
+    <li>Support delete-on-request and common student data practices. [NFR-110]</li>
+    <li>Do not break older data when the format changes. [NFR-111]</li>
+    <li>Be able to restore profiles from backups. [NFR-112]</li>
+  </ul>
+
+<section id="apis">
+  <h2>Selected APIs</h2>
+  <pre class="code">
+POST /profile/import { source:"canvas|file", fileRef? } → 202 { jobId }        [FR-101, NFR-102]
+GET  /profile/version/{id}                                → 200 { profile }     [FR-105, NFR-104]
+POST /profile/constraints                                 → 200 { saved:true }  [FR-102]
+POST /profile/preferences                                 → 200 { saved:true }  [FR-104]
+GET  /calendar/preview                                    → 200 { events[] }    [FR-103]
+  </pre>
+</section>
+
+<u><h2>AI Tutor</h2></u>
+<h3>Component Overview</h3>
+<p>
+  The AI Tutor component exists under the ID <strong>HLD-201</strong>. The AI Academic Companion contains this 
+  component which operates as its intelligent learning assistance subsystem. The system operates through large 
+  language models and natural language processing technology. The system delivers individualized tutoring support 
+  which adapts to specific situations. The component receives data from the scheduler and Canvas feeds.
+</p>
+
+<h3>Architectural Design</h3>
+<p>
+  The AI Tutor operates through a structured design system which includes multiple layers. The system consists 
+  of three essential operational layers.
+</p>
+
+<h4>HLD-201.1: Presentation Layer (User Interface)</h4>
+<p>
+  <strong>Chat Interface Module</strong>: The system offers users a conversational interface through this module. 
+  The UI exists as a part of the Chrome extension and HokieSPA interface. The module executes multiple essential 
+  functions which include:
+</p>
+<ul>
+  <li>The system displays messages in real time while supporting text and code blocks and mathematical notation.</li>
+  <li>The system checks user input for validity before processing queries.</li>
+  <li>The system maintains conversation history through its session management system.</li>
+  <li>The system displays loading indicators which progress as AI operations extend their duration.</li>
+</ul>
+<p>
+  <strong>Quiz Interface Module</strong>: The system shows students interactive assessment content through this 
+  module. The assessment contains different types of questions. The assessment includes three question types 
+  which are multiple choice and short answer and code completion. The system shows immediate feedback to users 
+  through its interface.
+</p>
+<p>
+  <strong>Dashboard Module</strong>: The dashboard module shows students their study progress through analytics 
+  and provides them with personalized recommendations. The system uses visual summaries and charts to display 
+  information.
+</p>
+
+<h4>HLD-201.2: Business Logic Layer (Tutoring Engine)</h4>
+<p>
+  The core AI tutoring operations run through this layer.
+</p>
+
+<p>
+  <strong>Query Processing Service (HLD-201.2.1)</strong>: 
+</p>
+<ul>
+  <li>The system accepts natural language queries from the presentation layer.</li>
+  <li>The system identifies the intended action from user input.</li>
+  <li>The system identifies essential information which includes course names and topic names and assignment references.</li>
+  <li>The system directs requests to specific handlers which handle particular tasks.</li>
+</ul>
+
+<p>
+  <strong>Content Retrieval Service (HLD-201.2.2)</strong>:
+</p>
+<ul>
+  <li>The system accesses relevant course materials through its connection to the Canvas Integration component.</li>
+  <li>The system stores frequently accessed content in its local database to enhance system performance.</li>
+  <li>The system performs semantic searches across course documents to locate relevant passages that match the context.</li>
+  <li>The system works with the Scheduler component to determine the current study session details.</li>
+</ul>
+
+<p>
+  <strong>AI Model Orchestration Service (HLD-201.2.3)</strong>:
+</p>
+<ul>
+  <li>The system maintains active connections to its underlying large language model infrastructure.</li>
+  <li>The system uses pre-defined prompt templates which optimize results for specific tutoring activities.</li>
+  <li>The system streams model responses in real time to provide immediate user feedback.</li>
+  <li>The system applies additional filters to ensure responses match both appropriateness standards and accuracy requirements.</li>
+  <li>The system activates alternative processing systems when the main model becomes unavailable.</li>
+</ul>
+
+<p>
+  <strong>Quiz Generation Service (HLD-201.2.4)</strong>:
+</p>
+<ul>
+  <li>The system analyzes educational materials to discover essential subjects and essential learning targets.</li>
+  <li>The system creates multiple question formats which match the subject matter requirements.</li>
+  <li>The system uses spaced repetition methods to determine which topics need review first.</li>
+  <li>The system adjusts question complexity based on student performance data from their past work.</li>
+  <li>The system checks all generated questions for both their correct answers and their clear understanding.</li>
+</ul>
+
+<p>
+  <strong>Explanation Service (HLD-201.2.5)</strong>:
+</p>
+<ul>
+  <li>The system generates explanations at different levels based on user preference selection.</li>
+  <li>The system creates educational examples from real-world situations to help students understand complex concepts.</li>
+  <li>The system develops complete problem solutions which include all necessary intermediate steps.</li>
+  <li>The system detects missing foundational knowledge areas and provides basic explanations to students.</li>
+</ul>
+
+<p>
+  <strong>Summarization Service (HLD-201.2.6)</strong>:
+</p>
+<ul>
+  <li>The system processes extensive reading materials and lecture notes and textbook sections.</li>
+  <li>The system identifies essential information along with definitions and important theorems from the content.</li>
+  <li>The system produces summaries at different levels of detail.</li>
+  <li>The system shows students how different topics relate to each other through cross-referenced concepts.</li>
+</ul>
+
+<p>
+  <strong>Recommendation Engine (HLD-201.2.7)</strong>:
+</p>
+<ul>
+  <li>The system uses student performance data to detect knowledge deficits.</li>
+  <li>The system reviews upcoming deadlines which the Scheduler component provides.</li>
+  <li>The system uses a weighted scoring algorithm to determine study priority order.</li>
+  <li>The system generates specific study recommendations which students can use at the beginning of their study sessions.</li>
+</ul>
+
+<h4>HLD-201.3: Data Layer</h4>
+<p>
+  <strong>Student Interaction Database (HLD-201.3.1)</strong>:
+</p>
+<ul>
+  <li>The system stores all user interactions including conversations and queries and AI responses in this database.</li>
+  <li>The system tracks student quiz performance through timestamped records that include difficulty levels.</li>
+  <li>The system monitors which subjects students study and how long they spend on each subject.</li>
+  <li>The system uses efficient retrieval methods to access previous user interactions from its database.</li>
+</ul>
+
+<p>
+  <strong>Course Content Cache (HLD-201.3.2)</strong>:
+</p>
+<ul>
+  <li>The system stores processed course materials which it retrieves from Canvas through this database.</li>
+  <li>The system uses document vector embeddings for semantic search operations.</li>
+  <li>The system implements expiration rules to update content that becomes outdated.</li>
+  <li>The system organizes content by subject and module and topic to support efficient information retrieval.</li>
+</ul>
+
+<p>
+  <strong>Model Configuration Store (HLD-201.3.3)</strong>:
+</p>
+<ul>
+  <li>The system stores all prompt templates together with model parameters and tuning settings in this database.</li>
+  <li>The system tracks all model updates and A/B testing results through its version control system.</li>
+  <li>The system monitors model performance through response time measurements and accuracy rating assessments.</li>
+</ul>
+
+<h3>Component Interactions</h3>
+<p>
+  The AI Tutor system exchanges data with other system components through specific interfaces.
+</p>
+
+<h4>With Scheduler Component:</h4>
+<ul>
+  <li><strong>Input</strong>: The system receives study session information which includes course details and scheduled time and session objectives.</li>
+  <li><strong>Output</strong>: The system generates time projections for students to perform their recommended study tasks.</li>
+  <li><strong>Rationale</strong>: The tutoring system generates recommendations which match the available study time of students.</li>
+</ul>
+
+<h4>With Canvas Integration Component:</h4>
+<ul>
+  <li><strong>Input</strong>: The system fetches all course materials and assignment information and upcoming deadline schedules.</li>
+  <li><strong>Output</strong>: The system generates particular content based on what students ask for.</li>
+  <li><strong>Rationale</strong>: The system bases its tutoring responses on official course materials to maintain precise information.</li>
+</ul>
+
+<h4>With Gamification Component:</h4>
+<ul>
+  <li><strong>Input</strong>: The system accepts achievement standards and performance targets for student advancement.</li>
+  <li><strong>Output</strong>: The system tracks student tutoring activities through their quiz completion rates and their study duration and their acquired subject knowledge.</li>
+  <li><strong>Rationale</strong>: The system allows students to earn rewards through their participation in tutoring activities and their achievement of learning targets.</li>
+</ul>
+
+<h4>With Student Profile Component:</h4>
+<ul>
+  <li><strong>Input</strong>: The system accesses student learning preferences together with their past performance records and their disability requirements.</li>
+  <li><strong>Output</strong>: The system maintains updated information about student topic understanding and learning performance metrics.</li>
+  <li><strong>Rationale</strong>: The system delivers customized tutoring methods through its understanding of student-specific requirements.</li>
+</ul>
+
+<h3>Technology Stack</h3>
+<ul>
+  <li><strong>Frontend</strong>: The application uses React.js for building UI elements and Socket.io for enabling real-time chat functionality.</li>
+  <li><strong>Backend</strong>: The API services operate through Node.js with Express while Python handles AI and machine learning processing tasks.</li>
+  <li><strong>AI and Machine Learning</strong>: The system uses OpenAI GPT-4 API as its main model while LangChain handles prompt orchestration and Sentence Transformers generate embeddings.</li>
+  <li><strong>Database</strong>: The system uses PostgreSQL for storing relational data and Pinecone or Weaviate for vector search operations.</li>
+  <li><strong>Caching</strong>: The system uses Redis for handling user sessions and storing content data.</li>
+</ul>
+
+<h3>Data Flow Diagram</h3>
+<pre class="mermaid">
+graph TD
+    A[Student] -->|Query| B[Chat Interface]
+    B --> C[Query Processing Service]
+    C --> D{Intent Classification}
+    D -->|Question| E[Content Retrieval Service]
+    D -->|Quiz Request| F[Quiz Generation Service]
+    D -->|Explanation| G[Explanation Service]
+    D -->|Summary| H[Summarization Service]
+    E --> I[Canvas Integration]
+    E --> J[Course Content Cache]
+    F --> K[AI Model Orchestration]
+    G --> K
+    H --> K
+    K --> L[LLM API]
+    L --> K
+    K --> M[Response]
+    M --> B
+    B --> A
+    K --> N[Student Interaction DB]
+    N --> O[Recommendation Engine]
+    O --> P[Dashboard Module]
+    P --> A
+</pre>
+
+<h3>Traceability Matrix: AI Tutor Requirements to Design Components</h3>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-top: 20px;">
+  <thead>
+    <tr style="background-color: #f0f0f0;">
+      <th>Requirement ID</th>
+      <th>Design Component(s)</th>
+      <th>Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>FR-201.1</td>
+      <td>HLD-201.2.1, HLD-201.2.3</td>
+      <td>Query Processing Service handles natural language processing. AI Model Orchestration generates responses.</td>
+    </tr>
+    <tr>
+      <td>FR-201.2</td>
+      <td>HLD-201.2.2, HLD-201.3.2</td>
+      <td>Content Retrieval Service fetches Canvas data. Content Cache stores it efficiently.</td>
+    </tr>
+    <tr>
+      <td>FR-201.3</td>
+      <td>HLD-201.2.4, HLD-201.3.1</td>
+      <td>Quiz Generation Service creates adaptive quizzes. Interaction Database tracks performance.</td>
+    </tr>
+    <tr>
+      <td>FR-201.4</td>
+      <td>HLD-201.2.6</td>
+      <td>Summarization Service provides multi-level reading comprehension.</td>
+    </tr>
+    <tr>
+      <td>FR-201.5</td>
+      <td>HLD-201.2.5, HLD-201.2.3</td>
+      <td>Explanation Service generates multi-modal content using AI orchestration.</td>
+    </tr>
+    <tr>
+      <td>FR-201.6</td>
+      <td>HLD-201.2.7</td>
+      <td>Recommendation Engine analyzes data and prioritizes study topics.</td>
+    </tr>
+    <tr>
+      <td>FR-201.7</td>
+      <td>HLD-201.3.1, HLD-201.1 Dashboard</td>
+      <td>Interaction Database stores analytics. Dashboard Module visualizes progress.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.1</td>
+      <td>HLD-201.3.2, Redis Caching</td>
+      <td>Content caching and optimized data structures ensure fast response times.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.2</td>
+      <td>HLD-201.2.3, HLD-201.2.2</td>
+      <td>Model Orchestration includes confidence scoring. Content Retrieval grounds responses.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.3</td>
+      <td>All Data Layer Components</td>
+      <td>Encryption and authentication and FERPA-compliant data handling throughout the system.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.4</td>
+      <td>Backend Architecture</td>
+      <td>Microservices design with horizontal scaling and load balancing support.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.5</td>
+      <td>HLD-201.1 Presentation Layer</td>
+      <td>UI modules implement WCAG 2.1 AA standards with accessibility features.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.6</td>
+      <td>HLD-201.3.3, HLD-201.2.3</td>
+      <td>Model Configuration Store enables versioning. Orchestration Service supports updates.</td>
+    </tr>
+    <tr>
+      <td>NFR-201.7</td>
+      <td>All HLD-201 Components</td>
+      <td>RESTful APIs and event-driven architecture ensure loose coupling between components.</td>
+    </tr>
+  </tbody>
+</table>
+
+<u><h2>UI</h2></u>
+The UI is the interactive layer between the user and the backend, which will be made using object-oriented architecture. The goal will be to maximize efficiency, maintainability, and reliability because the website should not be bogged down from visuals.
+    
+    <h2><b>UI Diagram</b></h2>
+    <b>Header Module:</b> Provides the navigation for users by including embedded links to access various parts of the website.<br>
+    <b>Footer Module:</b> Provides information about the website, and social media links.<br>
+    <b>Buttons Module:</b> Handles all the user interactions for approving information, clicking on links or confirming actions.<br>
+    <b>Text Field Module:</b> Handles all the user interactions for adding information about their schedules and for communication with the AI tutor.<br>
+    <b>Dashboard Module:</b> Displays the users' schedule, and previous tutoring sessions.<br>
+    <b>Timeout Module:</b> Ensures the user is logged out for inactivity for security reasons.<br>
+    
+    <h2><b>Languages/Libraries</b></h2>
+    ·         React/TypeScript will be used to create all the visuals and charts because they provide a live reactive display.<br>
+    ·         CSS will be used to change color and improve the aesthetics with padding and margins.<br>
+    
+    <h2><b>Modules</b></h2>
+    
+    <h3><b>Header Module</b></h3>
+    <b>Purpose:</b> Provides navigation to the different pages and displays if the user is signed in.<br>
+    <b>Class:</b> Header<br>
+    <b>Responsibilities:</b><br>
+    ·         Display Navigation links to the main pages [FR-303]<br>
+    ·         Maintain a constant position at the top of the screen [FR-304]<br>
+    ·         Change with the screen. [FR-305]<br>
+    
+    <h3><b>Footer Module</b></h3>
+    <b>Purpose:</b> Display website information and social media links<br>
+    <b>Class:</b> Footer<br>
+    <b>Responsibilities:</b><br>
+    ·         Show website "about us" links and social media links. [FR-304]<br>
+    ·         Remain at the bottom of the page. [NFR-304]<br>
+    
+    <h3><b>Buttons Module</b></h3>
+    <b>Purpose:</b> Allow users to interact with the system.<br>
+    <b>Classes:</b> Any that involves a click interaction.<br>
+    <b>Responsibilities:</b><br>
+    ·         Allow users to approve message or send information. [FR-301]<br>
+    ·         Complete backend information for the AI tutor or confirmation for a link. [FR-301,303].<br>
+    
+    <h3><b>Text Field Module</b></h3>
+    <b>Purpose:</b> Allow users to add information into text boxes/<br>
+    <b>Class:</b> Schedule, AITutor, Profile<br>
+    <b>Responsibilities:</b><br>
+    ·         Provide text boxes and ability for input. This will allow users to add information for tutors, set up their profile, and set up their schedule. [FR-302]<br>
+    ·         Send error message in case backend is not up or AI is down. [NFR-303]<br>
+    ·         Store data for signed-in users. [NFR-304]<br>
+    
+    <h3><b>Dashboard Module</b></h3>
+    <b>Purpose:</b> Display users tutoring history and progress with schedule achievements.<br>
+    <b>Classes:</b> Dashboard, Achievements, Data<br>
+    <b>Responsibilities:</b><br>
+    ·         Display academic progress, and AI tutoring sessions. [FR-306]<br>
+    ·         Access backend data/ [NFR-301,NFR-302]<br>
+    
+    <h3><b>Timeout Module</b></h3>
+    <b>Purpose:</b> Manage user activity for timeout.<br>
+    <b>Class:</b> Timeout<br>
+    <b>Responsibilities:</b><br>
+    ·         Monitor time of inactivity and display a warning. [FR-307]<br>
+    ·         Log out user and send them to a inactivity screen. [NFR-304]<br>
+
+<u><h2>Scheduler</h2></u>
+<h3>Overall Design</h3>
+<h3>Required Frameworks/External Libraries</h3>
+<ul>
+  <li><b>ChatGPT/Openai API:</b> This will be the LLM used to generate the schedules. </li>
+  <li><b>Canvas: </b>This will be used to gather user's assignments, due dates, and events</li>
+</ul>
+<img src="assets/images/schedule_HLD.png" class="image">
+<p><b>Data Integration Layer:</b> This will be used to gather prerequisite data to send to the AI companion to start the schedule generation process. The prerequisite date includes: assignments
+  from the user's profile on Canvas (due dates and names), user's preferred gym hours, study hours, breaks, personal time, and any other extracurriculars that the user would like to be on 
+  their schedule.
+</p>
+<p><b>Main Schedule Generation Layer:</b> This is where the schedule will be generated for a user. The AI Companion will have received data from the data integration layer, and will 
+  create an effective and manageable schedule. Any edits from the frontend are then communicated back to the AI Companion that will update and change the schedule, which will then reflect back to the frontend.
+</p>
+<p><b>Database:</b> This is where the user's schedules will be stored. Previous schedules will be stored so that the AI Companion can refer to them and learn from any changes from the user. This way
+  the AI Companion can create more effective schedules for its user.
+</p>
+<p><b>Frontend Layer:</b> The frontend layer will be displayed to the user. Specifically, it will show the calendar with the schedule that the AI Companion had created, and from there,
+  the system will notiy users about upcoming due dates or any assignment changes. Moreover, the user is able to make edits to the schedule that will then be sent back to the AI Companion to 
+  update the schedule.
+</p>
+<h3>Data Integration</h3>
+<ul>
+  <li><b>Classes:</b> API Data and User Data</li>
+  <li>Responsibilities:</li>
+  <ul>
+    <li>Grab data from 3rd party APIs (Canvas) to get user's classes, assignments, and due dates. (FR-402, NFR-407, NFR-408)</li>
+    <li>Query the user for specific constraints they would like to have for the schedule. (FR-401, FR-403)</li>
+    <li>Formatting and cleaning data for the AI Companion.</li>
+    <li>Grabbing consent from the user to be able to use their sensitive student infromation. (NFR-409)</li>
+  </ul>
+</ul>
+<h3>Main Schedule Generation</h3>
+<ul>
+  <li><b>Classes:</b> AI Companion, User Edits, Schedule</li>
+  <li>Responsibilities:</li>
+  <ul>
+    <li>Receive data from the Data Integration Layer to query LLM to generate the user's schedule. (FR-404, NFR-401)</li>
+    <li>Keep checking data from API Data to ensure the system is in synch with Canvas and the user's assignments and classes and make any necessary changes and updates to the user's schedule. (FR-405, NFR-402, NFR-403, NFR-411)</li>
+    <li>Notify the user when any updates/changes to the schedule were made. (FR-407)</li>
+    <li>Learning from any manual changes from the user and from previous schedules in the database. (NFR-410)</li>
+  </ul>
+</ul>
+<h3>Database</h3>
+<ul>
+  <li>Responsibilities:</li>
+  <ul>
+    <li>Store any edits that the user has made. (NFR-404, NFR-405)</li>
+    <li>Store previous weeks' schedules. </li>
+    <li>Keep a history of schedules so that the AI Companion can use them to learn and hone in on the user's preferences. (NFR-410) </li>
+  </ul>
+</ul>
+<h3>Frontend Layer</h3>
+<ul>
+  <li><b>Classes:</b> User Edits, Calendar, Notification System, User Feedback</li>
+  <li>Responsibilities:</li>
+  <ul>
+    <li>Ensure the user is able to interact with the visual schedule to make any necessary changes. (FR-406, FR-412)</li>
+    <li>Taking the schedule from the AI Companion and displaying it nicely to the user. (FR-411) </li>
+    <li>Constantly notifying the user when any changes to the schedule have been made and synchronizations from Canvas.(FR-407) </li>
+    <li>Notify the user for when the AI Companion recommends any new habits the user should adopt to keep the schedule. (FR-409) </li>
+    <li>Any feedback the AI Companion requests will be presented here and any feedback will be send back to the AI Companion. (FR-408, FR-410) </li>
+  </ul>
+</ul>
+
+  </div>
+</main>
+<footer>
+  <div class="wrapper prevnext">
+    <a href="requirements.html">Previous: Requirements</a>
+    <a href="rationale.html">Next: Design Rationale</a>
+  </div>
+</footer>
+</body>
+</html>
